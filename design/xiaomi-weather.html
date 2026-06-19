@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xiaomi Weather — UI Design</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a0f;
+    font-family: 'Noto Sans SC', 'Inter', -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: 60px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+  }
+
+  h1.title {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    opacity: 0.35;
+  }
+
+  .screens-row {
+    display: flex;
+    gap: 36px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .screen-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .screen-label {
+    color: #fff;
+    opacity: 0.3;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── Phone Frame ─── */
+  .phone {
+    width: 393px;
+    height: 852px;
+    border-radius: 50px;
+    background: #000;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow:
+      0 0 0 1px rgba(0,0,0,0.8),
+      0 40px 120px rgba(0,0,0,0.8),
+      inset 0 1px 0 rgba(255,255,255,0.06);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Dynamic island */
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 120px;
+    height: 34px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 200;
+  }
+
+  .screen {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .screen::-webkit-scrollbar { display: none; }
+
+  /* ─── MIUI Status Bar ─── */
+  .miui-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 56px 28px 0;
+    position: relative;
+    z-index: 100;
+  }
+
+  .miui-time {
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .miui-icons {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+
+  .miui-icons svg { opacity: 0.85; }
+
+
+  /* ═══════════════════════════════
+     SCREEN 1 — Sunny / Clear Day
+  ═══════════════════════════════ */
+  .xiaomi-sunny {
+    background: linear-gradient(180deg, #4da0e8 0%, #7bbdf5 40%, #a8d4fa 75%, #d0e8fc 100%);
+  }
+
+  .xiaomi-sunny .bg-sun {
+    position: absolute;
+    width: 260px;
+    height: 260px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,230,140,0.45) 0%, rgba(255,230,140,0) 70%);
+    top: 60px;
+    right: -40px;
+    z-index: 1;
+  }
+
+  /* ─── Location header ─── */
+  .location-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 28px 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .location-pin {
+    width: 14px;
+    height: 14px;
+  }
+
+  .location-name {
+    font-size: 17px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  .location-arrow {
+    width: 10px;
+    height: 10px;
+    opacity: 0.6;
+  }
+
+  /* ─── Main temp area ─── */
+  .main-temp-area {
+    text-align: center;
+    padding: 28px 28px 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .main-temp {
+    font-size: 120px;
+    font-weight: 100;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -8px;
+    position: relative;
+    display: inline-block;
+  }
+
+  .main-temp-deg {
+    font-size: 50px;
+    font-weight: 200;
+    position: absolute;
+    top: 8px;
+    right: -30px;
+    letter-spacing: 0;
+  }
+
+  .main-condition {
+    font-size: 16px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.85);
+    margin-top: 4px;
+  }
+
+  .main-range {
+    font-size: 14px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 6px;
+  }
+
+  /* ─── AQI Badge ─── */
+  .aqi-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.2);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 6px 14px;
+    margin-top: 14px;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  .aqi-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .aqi-text {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 400;
+  }
+
+  /* ─── Hourly section ─── */
+  .hourly-section {
+    margin: 28px 16px 0;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(30px);
+    border-radius: 18px;
+    padding: 16px 0;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    z-index: 10;
+  }
+
+  .section-hdr {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 18px 14px;
+  }
+
+  .section-hdr-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .section-hdr-link {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .hourly-chart {
+    position: relative;
+    height: 140px;
+    padding: 0 4px;
+    overflow-x: auto;
+  }
+
+  .hourly-chart::-webkit-scrollbar { display: none; }
+
+  .hourly-items {
+    display: flex;
+    min-width: max-content;
+    height: 100%;
+    position: relative;
+  }
+
+  .hourly-item {
+    flex-shrink: 0;
+    width: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+  }
+
+  .h-time {
+    font-size: 11px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+  }
+
+  .h-icon {
+    font-size: 18px;
+    margin: 6px 0 4px;
+  }
+
+  .h-temp-dot {
+    position: absolute;
+    bottom: 30px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #fff;
+    z-index: 5;
+  }
+
+  .h-temp-val {
+    position: absolute;
+    bottom: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+  }
+
+  /* SVG curve */
+  .hourly-curve {
+    position: absolute;
+    bottom: 28px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    z-index: 2;
+  }
+
+  /* ─── Daily forecast ─── */
+  .daily-section {
+    margin: 12px 16px 0;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(30px);
+    border-radius: 18px;
+    padding: 16px 18px;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    z-index: 10;
+  }
+
+  .daily-row {
+    display: flex;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .daily-row:last-child { border-bottom: none; }
+
+  .d-day {
+    font-size: 14px;
+    font-weight: 400;
+    color: #fff;
+    width: 52px;
+  }
+
+  .d-date {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    width: 50px;
+  }
+
+  .d-icon { font-size: 20px; width: 32px; text-align: center; }
+
+  .d-lo {
+    font-size: 14px;
+    color: rgba(255,255,255,0.5);
+    width: 30px;
+    text-align: right;
+  }
+
+  .d-bar-wrap {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.12);
+    margin: 0 10px;
+    position: relative;
+  }
+
+  .d-bar-fill {
+    position: absolute;
+    height: 100%;
+    border-radius: 2px;
+  }
+
+  .d-hi {
+    font-size: 14px;
+    color: #fff;
+    font-weight: 500;
+    width: 30px;
+    text-align: left;
+  }
+
+
+  /* ─── Life Index Grid (生活指数) ─── */
+  .life-section {
+    margin: 12px 16px 0;
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(30px);
+    border-radius: 18px;
+    padding: 16px 14px;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    z-index: 10;
+  }
+
+  .life-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .life-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 4px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.08);
+  }
+
+  .life-icon {
+    font-size: 22px;
+  }
+
+  .life-label {
+    font-size: 10px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 400;
+  }
+
+  .life-val {
+    font-size: 11px;
+    color: #fff;
+    font-weight: 500;
+  }
+
+
+  /* ─── Detail info cards ─── */
+  .detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 12px 16px 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .info-card {
+    background: rgba(255,255,255,0.18);
+    backdrop-filter: blur(30px);
+    border-radius: 18px;
+    padding: 16px;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  .ic-label {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 400;
+    margin-bottom: 10px;
+  }
+
+  .ic-val {
+    font-size: 26px;
+    font-weight: 200;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .ic-unit {
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 400;
+  }
+
+  .ic-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+    margin-top: 6px;
+  }
+
+  /* Sun card wide */
+  .sun-card {
+    grid-column: span 2;
+  }
+
+  .sun-arc-svg {
+    width: 100%;
+    height: 55px;
+    margin: 8px 0 4px;
+  }
+
+  .sun-row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .sun-lbl {
+    font-size: 11px;
+    color: rgba(255,255,255,0.45);
+  }
+
+  .sun-val {
+    font-size: 13px;
+    color: #fff;
+    font-weight: 500;
+    margin-top: 2px;
+  }
+
+  /* ─── Footer ─── */
+  .data-footer {
+    text-align: center;
+    padding: 20px 16px 40px;
+    position: relative;
+    z-index: 10;
+  }
+
+  .data-footer-text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+  }
+
+
+  /* ═══════════════════════════════
+     SCREEN 2 — Night / Clear
+  ═══════════════════════════════ */
+  .xiaomi-night {
+    background: linear-gradient(180deg, #0c1445 0%, #162058 30%, #1a2766 60%, #1e3070 100%);
+  }
+
+  .xiaomi-night .bg-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: #fff;
+    animation: twinkle 3s ease-in-out infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0%   { opacity: 0.15; }
+    100% { opacity: 0.7; }
+  }
+
+  .xiaomi-night .bg-moon {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #e8e0c8, #c4b896);
+    top: 120px;
+    right: 50px;
+    z-index: 2;
+    box-shadow: 0 0 60px rgba(228,220,180,0.25);
+  }
+
+  .xiaomi-night .bg-moon::before {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.06);
+    top: 15px;
+    left: 20px;
+  }
+
+  .xiaomi-night .bg-moon::after {
+    content: '';
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.04);
+    bottom: 18px;
+    right: 16px;
+  }
+
+
+  /* ═══════════════════════════════
+     SCREEN 3 — Rainy
+  ═══════════════════════════════ */
+  .xiaomi-rainy {
+    background: linear-gradient(180deg, #5a6a7a 0%, #6e7e8e 35%, #8899a6 65%, #a0b0bc 100%);
+  }
+
+  .rain-container {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .raindrop {
+    position: absolute;
+    width: 1.5px;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.3);
+    animation: rainfall linear infinite;
+  }
+
+  @keyframes rainfall {
+    0%   { transform: translateY(-20px); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 0.3; }
+    100% { transform: translateY(860px); opacity: 0; }
+  }
+
+
+  /* ═══════════════════════════════
+     SCREEN 4 — City Management
+  ═══════════════════════════════ */
+  .xiaomi-cities {
+    background: linear-gradient(180deg, #1a1d28 0%, #22263a 100%);
+  }
+
+  .cities-header {
+    padding: 56px 20px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .cities-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .cities-add-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cities-search {
+    margin: 20px 20px 0;
+    background: rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .cities-search-text {
+    font-size: 15px;
+    color: rgba(255,255,255,0.25);
+  }
+
+  .city-card {
+    margin: 12px 20px 0;
+    border-radius: 20px;
+    padding: 20px 20px;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .city-card-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .city-card-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cc-left {}
+
+  .cc-city {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .cc-condition {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    margin-top: 4px;
+  }
+
+  .cc-aqi {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 3px 10px;
+    margin-top: 8px;
+  }
+
+  .cc-aqi-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .cc-aqi-text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .cc-right { text-align: right; }
+
+  .cc-temp {
+    font-size: 48px;
+    font-weight: 200;
+    color: #fff;
+    line-height: 1;
+    letter-spacing: -3px;
+  }
+
+  .cc-range {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-top: 4px;
+  }
+
+  .cc-icon {
+    font-size: 30px;
+    margin-top: 2px;
+  }
+
+  /* MIUI bottom indicator */
+  .home-indicator {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 134px;
+    height: 5px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.2);
+    z-index: 100;
+  }
+
+  /* page dots */
+  .page-dots {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 20px 0 0;
+    position: relative;
+    z-index: 10;
+  }
+
+  .pdot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+  }
+
+  .pdot.active {
+    width: 18px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.7);
+  }
+</style>
+</head>
+<body>
+
+<h1 class="title">Xiaomi / MIUI Weather — Visual Design Mockups</h1>
+
+<div class="screens-row">
+
+<!-- ═══════════════════════════
+     SCREEN 1 — Sunny Day
+═══════════════════════════ -->
+<div class="screen-wrapper">
+  <div class="screen-label">Sunny · Day</div>
+  <div class="phone">
+    <div class="screen xiaomi-sunny">
+      <div class="bg-sun"></div>
+
+      <div class="miui-status">
+        <span class="miui-time">10:28</span>
+        <div class="miui-icons">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="white" opacity="0.8"><path d="M7 0C3.1 0 0 3.1 0 7h1.4c0-3.1 2.5-5.6 5.6-5.6S12.6 3.9 12.6 7H14C14 3.1 10.9 0 7 0zM7 2.8C4.7 2.8 2.8 4.7 2.8 7h1.4c0-1.5 1.3-2.8 2.8-2.8S9.8 5.5 9.8 7h1.4c0-2.3-1.9-4.2-4.2-4.2z"/><circle cx="7" cy="7" r="2"/></svg>
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="3" width="2.5" height="9" rx="1" fill="white"/><rect x="4" y="2" width="2.5" height="10" rx="1" fill="white"/><rect x="8" y="0" width="2.5" height="12" rx="1" fill="white"/><rect x="12" y="0" width="2.5" height="12" rx="1" fill="white" opacity="0.25"/></svg>
+          <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="3" stroke="white" stroke-opacity="0.35"/><rect x="1.5" y="1.5" width="15" height="8" rx="2" fill="white"/><path d="M22 3.5v4c.8-.3 1.5-1 1.5-2s-.7-1.7-1.5-2z" fill="white" opacity="0.4"/></svg>
+        </div>
+      </div>
+
+      <!-- Location -->
+      <div class="location-bar">
+        <svg class="location-pin" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="white" opacity="0.8"/></svg>
+        <span class="location-name">北京市</span>
+        <svg class="location-arrow" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.5"/></svg>
+      </div>
+
+      <!-- Main temperature -->
+      <div class="main-temp-area">
+        <div class="main-temp">28<span class="main-temp-deg">°</span></div>
+        <div class="main-condition">晴</div>
+        <div class="main-range">24° / 33°</div>
+
+        <div class="aqi-badge">
+          <div class="aqi-dot" style="background:#4cd964"></div>
+          <span class="aqi-text">AQI 42 优</span>
+        </div>
+      </div>
+
+      <!-- Page dots -->
+      <div class="page-dots">
+        <div class="pdot"></div>
+        <div class="pdot active"></div>
+        <div class="pdot"></div>
+      </div>
+
+      <!-- Hourly -->
+      <div class="hourly-section">
+        <div class="section-hdr">
+          <span class="section-hdr-title">24小时预报</span>
+          <span class="section-hdr-link">15天 ›</span>
+        </div>
+        <div class="hourly-chart">
+          <div class="hourly-items">
+            <svg class="hourly-curve" viewBox="0 0 480 50" preserveAspectRatio="none">
+              <path d="M30 30 C60 22, 90 15, 120 18 S180 30, 210 25 S270 12, 300 15 S360 28, 390 32 S450 38, 480 35" stroke="rgba(255,255,255,0.5)" stroke-width="1.5" fill="none"/>
+            </svg>
+            <div class="hourly-item">
+              <span class="h-time">现在</span>
+              <span class="h-icon">☀️</span>
+              <div class="h-temp-dot" style="bottom:38px"></div>
+              <span class="h-temp-val">28°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">11:00</span>
+              <span class="h-icon">☀️</span>
+              <div class="h-temp-dot" style="bottom:42px"></div>
+              <span class="h-temp-val">30°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">12:00</span>
+              <span class="h-icon">☀️</span>
+              <div class="h-temp-dot" style="bottom:46px"></div>
+              <span class="h-temp-val">32°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">13:00</span>
+              <span class="h-icon">🌤</span>
+              <div class="h-temp-dot" style="bottom:48px"></div>
+              <span class="h-temp-val">33°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">14:00</span>
+              <span class="h-icon">⛅</span>
+              <div class="h-temp-dot" style="bottom:46px"></div>
+              <span class="h-temp-val">32°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">15:00</span>
+              <span class="h-icon">🌤</span>
+              <div class="h-temp-dot" style="bottom:42px"></div>
+              <span class="h-temp-val">30°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily forecast -->
+      <div class="daily-section">
+        <div class="section-hdr" style="padding-bottom:6px">
+          <span class="section-hdr-title">15天预报</span>
+          <span class="section-hdr-link">详情 ›</span>
+        </div>
+        <div class="daily-row">
+          <span class="d-day">昨天</span>
+          <span class="d-date">06/18</span>
+          <span class="d-icon">🌤</span>
+          <span class="d-lo">23°</span>
+          <div class="d-bar-wrap"><div class="d-bar-fill" style="left:15%;width:60%;background:linear-gradient(90deg,#6ec6ff,#ffa726)"></div></div>
+          <span class="d-hi">31°</span>
+        </div>
+        <div class="daily-row">
+          <span class="d-day" style="color:#ffd54f;font-weight:500">今天</span>
+          <span class="d-date">06/19</span>
+          <span class="d-icon">☀️</span>
+          <span class="d-lo">24°</span>
+          <div class="d-bar-wrap"><div class="d-bar-fill" style="left:18%;width:68%;background:linear-gradient(90deg,#6ec6ff,#ff7043)"></div></div>
+          <span class="d-hi">33°</span>
+        </div>
+        <div class="daily-row">
+          <span class="d-day">明天</span>
+          <span class="d-date">06/20</span>
+          <span class="d-icon">🌧</span>
+          <span class="d-lo">19°</span>
+          <div class="d-bar-wrap"><div class="d-bar-fill" style="left:5%;width:45%;background:linear-gradient(90deg,#64b5f6,#90caf9)"></div></div>
+          <span class="d-hi">26°</span>
+        </div>
+        <div class="daily-row">
+          <span class="d-day">周六</span>
+          <span class="d-date">06/21</span>
+          <span class="d-icon">⛅</span>
+          <span class="d-lo">21°</span>
+          <div class="d-bar-wrap"><div class="d-bar-fill" style="left:10%;width:52%;background:linear-gradient(90deg,#6ec6ff,#ffb74d)"></div></div>
+          <span class="d-hi">28°</span>
+        </div>
+        <div class="daily-row">
+          <span class="d-day">周日</span>
+          <span class="d-date">06/22</span>
+          <span class="d-icon">☀️</span>
+          <span class="d-lo">25°</span>
+          <div class="d-bar-wrap"><div class="d-bar-fill" style="left:20%;width:72%;background:linear-gradient(90deg,#42a5f5,#ff7043)"></div></div>
+          <span class="d-hi">34°</span>
+        </div>
+      </div>
+
+      <!-- Life Index -->
+      <div class="life-section">
+        <div class="section-hdr" style="padding-bottom:0">
+          <span class="section-hdr-title">生活指数</span>
+        </div>
+        <div class="life-grid">
+          <div class="life-item">
+            <span class="life-icon">👕</span>
+            <span class="life-val">薄衫</span>
+            <span class="life-label">穿衣</span>
+          </div>
+          <div class="life-item">
+            <span class="life-icon">☀️</span>
+            <span class="life-val">强</span>
+            <span class="life-label">紫外线</span>
+          </div>
+          <div class="life-item">
+            <span class="life-icon">🚗</span>
+            <span class="life-val">适宜</span>
+            <span class="life-label">洗车</span>
+          </div>
+          <div class="life-item">
+            <span class="life-icon">🏃</span>
+            <span class="life-val">适宜</span>
+            <span class="life-label">运动</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail cards -->
+      <div class="detail-grid">
+        <div class="info-card">
+          <div class="ic-label">湿度</div>
+          <div class="ic-val">52<span class="ic-unit"> %</span></div>
+          <div class="ic-sub">舒适</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">体感温度</div>
+          <div class="ic-val">31<span class="ic-unit">°</span></div>
+          <div class="ic-sub">比实际温度高</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">风</div>
+          <div class="ic-val">12<span class="ic-unit"> km/h</span></div>
+          <div class="ic-sub">东南风 3级</div>
+        </div>
+        <div class="info-card">
+          <div class="ic-label">气压</div>
+          <div class="ic-val">1008<span class="ic-unit"> hPa</span></div>
+          <div class="ic-sub">正常</div>
+        </div>
+        <div class="info-card sun-card">
+          <div class="ic-label">日出日落</div>
+          <svg class="sun-arc-svg" viewBox="0 0 320 55" fill="none">
+            <path d="M15 50 Q160 -15 305 50" stroke="rgba(255,255,255,0.12)" stroke-width="1.5" stroke-dasharray="4 3"/>
+            <path d="M15 50 Q160 -15 220 30" stroke="rgba(255,200,60,0.7)" stroke-width="2"/>
+            <circle cx="220" cy="30" r="5" fill="#FFD740"/>
+          </svg>
+          <div class="sun-row">
+            <div><div class="sun-lbl">日出</div><div class="sun-val">05:14</div></div>
+            <div style="text-align:right"><div class="sun-lbl">日落</div><div class="sun-val">19:46</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="data-footer">
+        <div class="data-footer-text">数据来源：中国天气网</div>
+      </div>
+
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════
+     SCREEN 2 — Night
+═══════════════════════════ -->
+<div class="screen-wrapper">
+  <div class="screen-label">Clear · Night</div>
+  <div class="phone">
+    <div class="screen xiaomi-night">
+      <div class="bg-stars" id="stars"></div>
+      <div class="bg-moon"></div>
+
+      <div class="miui-status">
+        <span class="miui-time">22:15</span>
+        <div class="miui-icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="3" width="2.5" height="9" rx="1" fill="white"/><rect x="4" y="2" width="2.5" height="10" rx="1" fill="white"/><rect x="8" y="0" width="2.5" height="12" rx="1" fill="white"/><rect x="12" y="0" width="2.5" height="12" rx="1" fill="white" opacity="0.25"/></svg>
+          <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="3" stroke="white" stroke-opacity="0.35"/><rect x="1.5" y="1.5" width="10" height="8" rx="2" fill="white"/><path d="M22 3.5v4c.8-.3 1.5-1 1.5-2s-.7-1.7-1.5-2z" fill="white" opacity="0.4"/></svg>
+        </div>
+      </div>
+
+      <div class="location-bar" style="z-index:10;position:relative">
+        <svg class="location-pin" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="white" opacity="0.7"/></svg>
+        <span class="location-name">上海市</span>
+        <svg class="location-arrow" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.4"/></svg>
+      </div>
+
+      <div class="main-temp-area" style="position:relative;z-index:10">
+        <div class="main-temp">21<span class="main-temp-deg">°</span></div>
+        <div class="main-condition">晴</div>
+        <div class="main-range">19° / 29°</div>
+        <div class="aqi-badge" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.12)">
+          <div class="aqi-dot" style="background:#ffeb3b"></div>
+          <span class="aqi-text">AQI 78 良</span>
+        </div>
+      </div>
+
+      <div class="page-dots" style="position:relative;z-index:10">
+        <div class="pdot active"></div>
+        <div class="pdot"></div>
+        <div class="pdot"></div>
+      </div>
+
+      <div class="hourly-section" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1);position:relative;z-index:10">
+        <div class="section-hdr">
+          <span class="section-hdr-title">24小时预报</span>
+          <span class="section-hdr-link">15天 ›</span>
+        </div>
+        <div class="hourly-chart">
+          <div class="hourly-items">
+            <svg class="hourly-curve" viewBox="0 0 480 50" preserveAspectRatio="none">
+              <path d="M30 20 C60 22, 90 26, 120 30 S180 35, 210 34 S270 30, 300 28 S360 24, 390 22 S450 20, 480 22" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" fill="none"/>
+            </svg>
+            <div class="hourly-item">
+              <span class="h-time">现在</span><span class="h-icon">🌙</span>
+              <div class="h-temp-dot" style="bottom:48px"></div><span class="h-temp-val">21°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">23:00</span><span class="h-icon">🌙</span>
+              <div class="h-temp-dot" style="bottom:46px"></div><span class="h-temp-val">20°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">00:00</span><span class="h-icon">🌙</span>
+              <div class="h-temp-dot" style="bottom:42px"></div><span class="h-temp-val">19°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">01:00</span><span class="h-icon">🌙</span>
+              <div class="h-temp-dot" style="bottom:40px"></div><span class="h-temp-val">19°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">02:00</span><span class="h-icon">🌙</span>
+              <div class="h-temp-dot" style="bottom:38px"></div><span class="h-temp-val">18°</span>
+            </div>
+            <div class="hourly-item">
+              <span class="h-time">03:00</span><span class="h-icon">🌙</span>
+              <div class="h-temp-dot" style="bottom:38px"></div><span class="h-temp-val">18°</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="daily-section" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1);position:relative;z-index:10">
+        <div class="section-hdr" style="padding-bottom:6px">
+          <span class="section-hdr-title">15天预报</span>
+          <span class="section-hdr-link">详情 ›</span>
+        </div>
+        <div class="daily-row"><span class="d-day">昨天</span><span class="d-date">06/18</span><span class="d-icon">🌤</span><span class="d-lo">20°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:12%;width:55%;background:linear-gradient(90deg,#64b5f6,#ffa726)"></div></div><span class="d-hi">29°</span></div>
+        <div class="daily-row"><span class="d-day" style="color:#90caf9;font-weight:500">今天</span><span class="d-date">06/19</span><span class="d-icon">☀️</span><span class="d-lo">19°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:10%;width:58%;background:linear-gradient(90deg,#42a5f5,#ffa726)"></div></div><span class="d-hi">29°</span></div>
+        <div class="daily-row"><span class="d-day">明天</span><span class="d-date">06/20</span><span class="d-icon">⛅</span><span class="d-lo">22°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:16%;width:50%;background:linear-gradient(90deg,#64b5f6,#ffcc80)"></div></div><span class="d-hi">30°</span></div>
+        <div class="daily-row"><span class="d-day">周六</span><span class="d-date">06/21</span><span class="d-icon">🌦</span><span class="d-lo">18°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:8%;width:42%;background:linear-gradient(90deg,#90caf9,#b0bec5)"></div></div><span class="d-hi">25°</span></div>
+        <div class="daily-row"><span class="d-day">周日</span><span class="d-date">06/22</span><span class="d-icon">☀️</span><span class="d-lo">21°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:14%;width:62%;background:linear-gradient(90deg,#42a5f5,#ff7043)"></div></div><span class="d-hi">31°</span></div>
+      </div>
+
+      <div class="life-section" style="background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.1);position:relative;z-index:10">
+        <div class="section-hdr" style="padding-bottom:0"><span class="section-hdr-title">生活指数</span></div>
+        <div class="life-grid">
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">👕</span><span class="life-val">短袖</span><span class="life-label">穿衣</span></div>
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">☀️</span><span class="life-val">无</span><span class="life-label">紫外线</span></div>
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">🚗</span><span class="life-val">适宜</span><span class="life-label">洗车</span></div>
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">🏃</span><span class="life-val">适宜</span><span class="life-label">运动</span></div>
+        </div>
+      </div>
+
+      <div class="data-footer"><div class="data-footer-text">数据来源：中国天气网</div></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════
+     SCREEN 3 — Rainy
+═══════════════════════════ -->
+<div class="screen-wrapper">
+  <div class="screen-label">Rainy · Day</div>
+  <div class="phone">
+    <div class="screen xiaomi-rainy">
+      <div class="rain-container" id="rain"></div>
+
+      <div class="miui-status" style="position:relative;z-index:10">
+        <span class="miui-time">14:32</span>
+        <div class="miui-icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="3" width="2.5" height="9" rx="1" fill="white"/><rect x="4" y="2" width="2.5" height="10" rx="1" fill="white"/><rect x="8" y="0" width="2.5" height="12" rx="1" fill="white"/><rect x="12" y="0" width="2.5" height="12" rx="1" fill="white" opacity="0.25"/></svg>
+          <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="3" stroke="white" stroke-opacity="0.35"/><rect x="1.5" y="1.5" width="13" height="8" rx="2" fill="white"/><path d="M22 3.5v4c.8-.3 1.5-1 1.5-2s-.7-1.7-1.5-2z" fill="white" opacity="0.4"/></svg>
+        </div>
+      </div>
+
+      <div class="location-bar" style="position:relative;z-index:10">
+        <svg class="location-pin" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.5 1 2.5 3 2.5 5.5C2.5 9 7 13 7 13s4.5-4 4.5-7.5C11.5 3 9.5 1 7 1zm0 6a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" fill="white" opacity="0.7"/></svg>
+        <span class="location-name">杭州市</span>
+        <svg class="location-arrow" viewBox="0 0 10 10" fill="none"><path d="M3 2l4 3-4 3" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-opacity="0.4"/></svg>
+      </div>
+
+      <div class="main-temp-area" style="position:relative;z-index:10">
+        <div class="main-temp">18<span class="main-temp-deg">°</span></div>
+        <div class="main-condition">中雨</div>
+        <div class="main-range">16° / 22°</div>
+        <div class="aqi-badge" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.15)">
+          <div class="aqi-dot" style="background:#4cd964"></div>
+          <span class="aqi-text">AQI 35 优</span>
+        </div>
+      </div>
+
+      <div class="page-dots" style="position:relative;z-index:10">
+        <div class="pdot"></div>
+        <div class="pdot"></div>
+        <div class="pdot active"></div>
+      </div>
+
+      <div class="hourly-section" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.12);position:relative;z-index:10">
+        <div class="section-hdr"><span class="section-hdr-title">24小时预报</span><span class="section-hdr-link">15天 ›</span></div>
+        <div class="hourly-chart">
+          <div class="hourly-items">
+            <svg class="hourly-curve" viewBox="0 0 480 50" preserveAspectRatio="none">
+              <path d="M30 25 C60 28, 90 32, 120 30 S180 24, 210 22 S270 24, 300 28 S360 32, 390 35 S450 33, 480 30" stroke="rgba(255,255,255,0.35)" stroke-width="1.5" fill="none"/>
+            </svg>
+            <div class="hourly-item"><span class="h-time">现在</span><span class="h-icon">🌧</span><div class="h-temp-dot" style="bottom:42px"></div><span class="h-temp-val">18°</span></div>
+            <div class="hourly-item"><span class="h-time">15:00</span><span class="h-icon">🌧</span><div class="h-temp-dot" style="bottom:40px"></div><span class="h-temp-val">17°</span></div>
+            <div class="hourly-item"><span class="h-time">16:00</span><span class="h-icon">🌦</span><div class="h-temp-dot" style="bottom:38px"></div><span class="h-temp-val">17°</span></div>
+            <div class="hourly-item"><span class="h-time">17:00</span><span class="h-icon">🌧</span><div class="h-temp-dot" style="bottom:40px"></div><span class="h-temp-val">17°</span></div>
+            <div class="hourly-item"><span class="h-time">18:00</span><span class="h-icon">☁️</span><div class="h-temp-dot" style="bottom:44px"></div><span class="h-temp-val">18°</span></div>
+            <div class="hourly-item"><span class="h-time">19:00</span><span class="h-icon">🌥</span><div class="h-temp-dot" style="bottom:42px"></div><span class="h-temp-val">17°</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="daily-section" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.12);position:relative;z-index:10">
+        <div class="section-hdr" style="padding-bottom:6px"><span class="section-hdr-title">15天预报</span><span class="section-hdr-link">详情 ›</span></div>
+        <div class="daily-row"><span class="d-day">昨天</span><span class="d-date">06/18</span><span class="d-icon">☁️</span><span class="d-lo">17°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:10%;width:40%;background:linear-gradient(90deg,#90caf9,#b0bec5)"></div></div><span class="d-hi">23°</span></div>
+        <div class="daily-row"><span class="d-day" style="color:#81d4fa;font-weight:500">今天</span><span class="d-date">06/19</span><span class="d-icon">🌧</span><span class="d-lo">16°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:6%;width:35%;background:linear-gradient(90deg,#64b5f6,#90caf9)"></div></div><span class="d-hi">22°</span></div>
+        <div class="daily-row"><span class="d-day">明天</span><span class="d-date">06/20</span><span class="d-icon">🌧</span><span class="d-lo">15°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:3%;width:30%;background:linear-gradient(90deg,#42a5f5,#90caf9)"></div></div><span class="d-hi">20°</span></div>
+        <div class="daily-row"><span class="d-day">周六</span><span class="d-date">06/21</span><span class="d-icon">⛅</span><span class="d-lo">18°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:12%;width:48%;background:linear-gradient(90deg,#64b5f6,#ffcc80)"></div></div><span class="d-hi">26°</span></div>
+        <div class="daily-row"><span class="d-day">周日</span><span class="d-date">06/22</span><span class="d-icon">☀️</span><span class="d-lo">20°</span><div class="d-bar-wrap"><div class="d-bar-fill" style="left:15%;width:55%;background:linear-gradient(90deg,#42a5f5,#ffa726)"></div></div><span class="d-hi">28°</span></div>
+      </div>
+
+      <div class="life-section" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.12);position:relative;z-index:10">
+        <div class="section-hdr" style="padding-bottom:0"><span class="section-hdr-title">生活指数</span></div>
+        <div class="life-grid">
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">🧥</span><span class="life-val">外套</span><span class="life-label">穿衣</span></div>
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">☂️</span><span class="life-val">带伞</span><span class="life-label">雨伞</span></div>
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">🚗</span><span class="life-val">不宜</span><span class="life-label">洗车</span></div>
+          <div class="life-item" style="background:rgba(255,255,255,0.06)"><span class="life-icon">🏃</span><span class="life-val">不宜</span><span class="life-label">运动</span></div>
+        </div>
+      </div>
+
+      <div class="detail-grid" style="position:relative;z-index:10">
+        <div class="info-card" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.12)">
+          <div class="ic-label">湿度</div><div class="ic-val">92<span class="ic-unit"> %</span></div><div class="ic-sub">潮湿</div>
+        </div>
+        <div class="info-card" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.12)">
+          <div class="ic-label">能见度</div><div class="ic-val">3.5<span class="ic-unit"> km</span></div><div class="ic-sub">较低</div>
+        </div>
+      </div>
+
+      <div class="data-footer" style="position:relative;z-index:10"><div class="data-footer-text">数据来源：中国天气网</div></div>
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════
+     SCREEN 4 — City List
+═══════════════════════════ -->
+<div class="screen-wrapper">
+  <div class="screen-label">City Management</div>
+  <div class="phone">
+    <div class="screen xiaomi-cities">
+
+      <div class="miui-status">
+        <span class="miui-time">10:28</span>
+        <div class="miui-icons">
+          <svg width="18" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="3" width="2.5" height="9" rx="1" fill="white"/><rect x="4" y="2" width="2.5" height="10" rx="1" fill="white"/><rect x="8" y="0" width="2.5" height="12" rx="1" fill="white"/><rect x="12" y="0" width="2.5" height="12" rx="1" fill="white" opacity="0.25"/></svg>
+          <svg width="24" height="11" viewBox="0 0 24 11" fill="none"><rect x="0.5" y="0.5" width="20" height="10" rx="3" stroke="white" stroke-opacity="0.35"/><rect x="1.5" y="1.5" width="15" height="8" rx="2" fill="white"/><path d="M22 3.5v4c.8-.3 1.5-1 1.5-2s-.7-1.7-1.5-2z" fill="white" opacity="0.4"/></svg>
+        </div>
+      </div>
+
+      <div class="cities-header">
+        <div class="cities-title">城市管理</div>
+        <button class="cities-add-btn">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="white" stroke-width="1.5" stroke-linecap="round"><path d="M9 3v12M3 9h12"/></svg>
+        </button>
+      </div>
+
+      <div class="cities-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-linecap="round"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M11 11l3.5 3.5"/></svg>
+        <span class="cities-search-text">搜索城市</span>
+      </div>
+
+      <!-- City cards -->
+      <div class="city-card" style="background:linear-gradient(135deg, #4da0e8, #7bbdf5)">
+        <div class="city-card-content">
+          <div class="cc-left">
+            <div class="cc-city">📍 北京市</div>
+            <div class="cc-condition">晴 · 当前定位</div>
+            <div class="cc-aqi"><div class="cc-aqi-dot" style="background:#4cd964"></div><span class="cc-aqi-text">AQI 42</span></div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-temp">28°</div>
+            <div class="cc-range">24° / 33°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="city-card" style="background:linear-gradient(135deg, #0c1445, #1e3070)">
+        <div class="city-card-content">
+          <div class="cc-left">
+            <div class="cc-city">上海市</div>
+            <div class="cc-condition">晴</div>
+            <div class="cc-aqi"><div class="cc-aqi-dot" style="background:#ffeb3b"></div><span class="cc-aqi-text">AQI 78</span></div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-temp">21°</div>
+            <div class="cc-range">19° / 29°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="city-card" style="background:linear-gradient(135deg, #5a6a7a, #8899a6)">
+        <div class="city-card-content">
+          <div class="cc-left">
+            <div class="cc-city">杭州市</div>
+            <div class="cc-condition">中雨</div>
+            <div class="cc-aqi"><div class="cc-aqi-dot" style="background:#4cd964"></div><span class="cc-aqi-text">AQI 35</span></div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-temp">18°</div>
+            <div class="cc-range">16° / 22°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="city-card" style="background:linear-gradient(135deg, #f5a623, #f76b1c)">
+        <div class="city-card-content">
+          <div class="cc-left">
+            <div class="cc-city">深圳市</div>
+            <div class="cc-condition">多云</div>
+            <div class="cc-aqi"><div class="cc-aqi-dot" style="background:#4cd964"></div><span class="cc-aqi-text">AQI 38</span></div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-temp">32°</div>
+            <div class="cc-range">27° / 34°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="city-card" style="background:linear-gradient(135deg, #2c3e6b, #3d5a8a)">
+        <div class="city-card-content">
+          <div class="cc-left">
+            <div class="cc-city">成都市</div>
+            <div class="cc-condition">阴</div>
+            <div class="cc-aqi"><div class="cc-aqi-dot" style="background:#ffeb3b"></div><span class="cc-aqi-text">AQI 65</span></div>
+          </div>
+          <div class="cc-right">
+            <div class="cc-temp">24°</div>
+            <div class="cc-range">20° / 27°</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end screens-row -->
+
+
+<script>
+// Stars for night screen
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = 1 + Math.random() * 2;
+  s.style.width  = size + 'px';
+  s.style.height = size + 'px';
+  s.style.left = Math.random() * 393 + 'px';
+  s.style.top  = Math.random() * 400 + 'px';
+  s.style.animationDelay    = Math.random() * 3 + 's';
+  s.style.animationDuration = (2 + Math.random() * 3) + 's';
+  starsEl.appendChild(s);
+}
+
+// Rain for rainy screen
+const rainEl = document.getElementById('rain');
+for (let i = 0; i < 60; i++) {
+  const d = document.createElement('div');
+  d.className = 'raindrop';
+  d.style.left   = Math.random() * 393 + 'px';
+  d.style.height = (12 + Math.random() * 16) + 'px';
+  d.style.opacity = 0.15 + Math.random() * 0.35;
+  d.style.animationDuration = (0.5 + Math.random() * 0.7) + 's';
+  d.style.animationDelay    = Math.random() * 2 + 's';
+  rainEl.appendChild(d);
+}
+</script>
+</body>
+</html>
